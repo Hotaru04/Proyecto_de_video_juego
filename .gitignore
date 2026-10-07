@@ -1,0 +1,18 @@
+# Excluir carpetas de compilación de STM32CubeIDE
+Debug/
+Release/
+
+# Excluir archivos binarios y compilados
+*.o
+*.elf
+*.bin
+*.hex
+*.map
+*.su
+*.list
+
+# Excluir configuraciones locales del IDE
+.metadata/
+.settings/
+*.launch
+*.bak
