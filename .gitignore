@@ -1,4 +1,4 @@
-# Excluir carpetas de compilación de STM32CubeIDE
+# Excluir carpetas de compilacion de STM32CubeIDE
 Debug/
 Release/
 
@@ -16,3 +16,7 @@ Release/
 .settings/
 *.launch
 *.bak
+
+# Archivos del sistema y de CubeMX innecesarios
+.DS_Store
+*.mxproject
