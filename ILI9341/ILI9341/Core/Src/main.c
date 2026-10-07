@@ -41,6 +41,11 @@
 #define GH_CUADROS_ENTRE_NOTAS 22 /* cuadros entre notas nuevas (22*4 = 88 px de separación) */
 
 
+
+//Comentario de prueba para el GIt
+
+
+
 // Este define lo tengo que cambiar o eliminar ya que la presion sera dictada por el tiempo del boton
 
 //#define GH_TIEMPO_PRESION   120  /* ms que el botón queda encendido al llegar la nota */
