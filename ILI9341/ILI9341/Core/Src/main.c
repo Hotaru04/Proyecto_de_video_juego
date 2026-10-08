@@ -119,7 +119,6 @@ static void GH_DemoPaso(void) {
 	if (++cuadrosDesdeNota >= cuadrosEspera) {
 		for (int i = 0; i < GH_MAX_NOTAS; i++) {
 			if (!notas[i].activa) {
-
 				GH_NotaLargaIniciar(&notas[i], patron[iPatron].carril, patron[iPatron].largo);
 				cuadrosEspera = GH_CUADROS_ENTRE_NOTAS + patron[iPatron].largo / GH_VELOCIDAD;
 				iPatron = (iPatron + 1) % (sizeof(patron) / sizeof(patron[0]));
@@ -129,7 +128,7 @@ static void GH_DemoPaso(void) {
 		}
 	}
 
-	/* 2. Leer estado FÍSICO de los botones (0 lógico = presionado) */
+	/* 2. Leer estado FÍSICO de los botones (0 lógico = GPIO_PIN_RESET) */
 	uint8_t btnFisico[GH_NUM_CARRILES];
 	btnFisico[0] = (HAL_GPIO_ReadPin(GPIOC, bverde_Pin)    == GPIO_PIN_RESET);
 	btnFisico[1] = (HAL_GPIO_ReadPin(GPIOC, brojo_Pin)     == GPIO_PIN_RESET);
@@ -137,7 +136,6 @@ static void GH_DemoPaso(void) {
 	btnFisico[3] = (HAL_GPIO_ReadPin(GPIOC, bazul_Pin)     == GPIO_PIN_RESET);
 
 	GH_Nota* colaActiva[GH_NUM_CARRILES] = {NULL, NULL, NULL, NULL};
-	uint8_t forzarRedibujoBoton[GH_NUM_CARRILES] = {0};
 
 	/* 3. Mover notas y detectar ACIERTOS O FALLOS */
 	for (int i = 0; i < GH_MAX_NOTAS; i++) {
@@ -146,25 +144,20 @@ static void GH_DemoPaso(void) {
 		uint8_t c = notas[i].carril;
 		GH_NotaMover(&notas[i], GH_VELOCIDAD);
 
-		/* Si la nota cruza la línea del botón (ya sea acierto o fallo),
-		   forzamos redibujo constante para que la estela no borre el botón físico */
-		if (notas[i].y >= GH_BOTON_Y - GH_SPR_H && notas[i].y <= GH_PANTALLA_H) {
-			forzarRedibujoBoton[c] = 1;
-		}
-
 		/* --- LÓGICA DE ACIERTO (HIT ZONE) --- */
-		/* Margen de tolerancia para presionar el botón (desde un poco antes hasta un poco después) */
+		/* Margen de tolerancia para presionar (desde -15px antes hasta +20px después del botón) */
 		if (notas[i].y >= GH_BOTON_Y - 15 && notas[i].y <= GH_BOTON_Y + 20) {
-			if (btnFisico[c]) { // Si lo presionas a tiempo...
+			if (btnFisico[c]) { // Si presionas a tiempo...
 				if (notas[i].largo == 0) {
-					/* ¡NOTA CORTA ATRAPADA! Se borra y desaparece inmediatamente */
+					/* ATRAPADA: Se borra su rastro instantáneamente y se desactiva */
 					GH_RestaurarFondo(GH_CARRIL_X(c), notas[i].y, GH_SPR_W, GH_SPR_H);
 					notas[i].activa = 0;
+					continue; // Ya no seguimos procesando esta nota
 				}
 			}
 		}
 
-		/* Detección de nota larga (Solo ilumina la estela si la tienes presionada) */
+		/* Detectar la cola de la nota larga para encenderla */
 		if (notas[i].activa && notas[i].largo > 0 && notas[i].cabezaLlego) {
 			if (btnFisico[c]) {
 				colaActiva[c] = &notas[i];
@@ -172,7 +165,7 @@ static void GH_DemoPaso(void) {
 		}
 	}
 
-	/* 4. Dibujar en pantalla (Estado Visual + Repintado por Superposición) */
+	/* 4. Dibujar en pantalla (Máximo Rendimiento Visual) */
 	for (uint8_t c = 0; c < GH_NUM_CARRILES; c++) {
 		uint8_t nuevoEstadoBoton = GH_BTN_REPOSO;
 		uint8_t nuevoEstadoCola = 0;
@@ -186,8 +179,8 @@ static void GH_DemoPaso(void) {
 			}
 		}
 
-		/* El botón se redibuja si cambia tu presión física O si una nota errada está cayendo sobre él */
-		if (nuevoEstadoBoton != estadoVisualBoton[c] || forzarRedibujoBoton[c]) {
+		/* El botón SOLO se dibuja si tú lo presionas o lo sueltas. ¡Cero parpadeos! */
+		if (nuevoEstadoBoton != estadoVisualBoton[c]) {
 			GH_DibujarBoton(c, nuevoEstadoBoton);
 			estadoVisualBoton[c] = nuevoEstadoBoton;
 		}
