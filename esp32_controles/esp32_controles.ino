@@ -1,5 +1,6 @@
 /*
  * esp32_controles.ino
+ * Autores: Abner Quiej y Edwin Parada
  */
 #include <Bluepad32.h>
 
