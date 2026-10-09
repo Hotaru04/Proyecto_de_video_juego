@@ -18,6 +18,8 @@ typedef struct {
 	const uint8_t *p1_tracks;   /* pistas del jugador 1 (canal 1); NULL si la canción no tiene canales */
 	uint8_t        p1_n;        /* cuántas pistas tiene el jugador 1 */
 	uint16_t       master;      /* volumen maestro para esta canción (0 = el normal, 224) */
+	const uint8_t *p2_tracks;   /* pistas del jugador 2 (canal 2); NULL si no tiene */
+	uint8_t        p2_n;        /* cuántas pistas tiene el jugador 2 */
 } SongEntry;
 
 extern const SongEntry song_table[];
