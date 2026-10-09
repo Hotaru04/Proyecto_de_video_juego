@@ -27,6 +27,8 @@
 /* USER CODE BEGIN Includes */
 #include "audio.h"      /* motor de audio: TIM6 -> DAC1 (PA4) <- DMA1 Stream5 */
 #include "songs.h"      /* tabla de canciones (los .h de canciones se incluyen en songs.c) */
+#include "enlace_spi.h" /* SPI2 hacia el STM de la pantalla */
+#include "beats.h"      /* notas del juego que se mandan a la pantalla */
 
 /* USER CODE END Includes */
 
@@ -81,6 +83,7 @@ static void Song_Start(uint8_t idx) {
   p1_muted = 0;                                           /* volúmenes nuevos: nada muteado */
   Audio_SetMasterVolume(cur->master ? cur->master : AUDIO_MASTER_VOLUME);
   Audio_PlaySong(cur->song, 1);                           /* 1 = repetir */
+  Beats_Iniciar(cur, idx);                                /* avisa a la pantalla y empieza a mandar notas */
   song_playing = idx;
 }
 
@@ -144,6 +147,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   Audio_Init();                    /* calcula ARR de TIM6 para 32 kHz y prepara el sintetizador */
   Audio_Start();                   /* desde aquí el audio corre solo por DMA + interrupciones */
+  Enlace_Init();                   /* SPI2 maestro: PB13 SCK, PB15 MOSI, PB12 CS */
   Song_Start(song_index);          /* canción inicial */
 
   /* USER CODE END 2 */
@@ -159,6 +163,9 @@ int main(void)
     if (song_index != song_playing) {
       Song_Start(song_index);
     }
+
+    /* Notas del juego hacia la pantalla (se mandan GH_ANTICIPACION_MS antes de que suenen) */
+    Beats_Actualizar();
 
     /* [Prueba mute] jugador 1: suena con B1 presionado, muteado al soltarlo */
     P1_SetMuted(!B1_Sostenido());
