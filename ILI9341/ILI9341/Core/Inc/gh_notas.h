@@ -29,8 +29,8 @@ typedef struct {
 	uint8_t carril;      /* 0 verde, 1 rojo, 2 amarillo, 3 azul */
 	uint8_t activa;      /* 1 = en juego */
 	uint8_t cabezaLlego; /* 1 = la cabeza ya llegó al botón (solo notas largas) */
+	uint8_t atrapada;    /* NUEVO: 1 = la nota larga está anclada al botón */
 } GH_Nota;
-
 /* Fondo: único punto a cambiar cuando el fondo sea una imagen */
 void GH_RestaurarFondo(int16_t x, int16_t y, int16_t w, int16_t h);
 
